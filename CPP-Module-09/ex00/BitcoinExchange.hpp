@@ -7,7 +7,19 @@
 #include <map>
 #include <string>
 
-struct day { };
+typedef enum error_state_e {
+	bad_date = 0,
+	bad_value,
+	too_large,
+	negative,
+	none
+} error_state_t;
+
+typedef struct check_s {
+	std::string	  date;
+	double		  value;
+	error_state_t error_state;
+} check_t;
 
 class BitcoinExchange {
 public:
@@ -17,6 +29,8 @@ public:
 
 private:
 	container data_;
+
+	void find_and_exchange_(std::string date, double value);
 
 public:
 	BitcoinExchange(const char* csv_file = "./data.csv");

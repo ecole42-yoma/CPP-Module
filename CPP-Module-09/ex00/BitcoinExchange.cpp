@@ -65,11 +65,24 @@ namespace {
 		std::cout << std::endl;
 	}
 
-	// inline void
-	// check__(const char* s1) {
-	// 	std::cout << s1 << std::endl;
-	// 	exit(0);
-	// }
+	inline void
+	bad_date_(check_t check) {
+		std::cout << "Error: bad input => ";
+		std::cout << check.date << std::endl;
+	}
+	inline void
+	bad_value_(check_t check) {
+		std::cout << "Error: bad input => ";
+		std::cout << check.date << std::endl;
+	}
+	inline void
+	too_large_(check_t check) {
+		std::cout << "Error: too large a number. : " << check.value << std::endl;
+	}
+	inline void
+	negative_(check_t check) {
+		std::cout << "Error: no a positive number : " << check.value << std::endl;
+	}
 
 	inline std::map<std::string, double>
 	parse_csv_file_(std::string buf) {
@@ -248,126 +261,12 @@ namespace {
 		return data;
 	}
 
-	inline std::map<std::string, std::string>
-	input_check_(std::string buf) {
-		if (buf.empty()) {
-			log_("Error", "input error");
-			exit(1);
-		}
+	inline check_t
+	parse_input_data_(std::string& buf) {
+		check_t input;
 
-		std::map<std::string, std::string> input;
-		std::string::iterator			   it = buf.begin();
-
-		std::string		  temp_string;
-		std::string		  date_string;
-		std::stringstream ss;
-
-		enum {
-			start,
-			date,
-			separator,
-			value,
-			newline,
-			skip,
-			end
-		} state,
-			prev_state, next_state;
-
-		state = start;
-		while (state != end) {
-			switch (state) {
-			case start: {
-				if ("date | value" == buf.substr(0, 13)) {
-					state	   = newline;
-					next_state = date,
-					it += 13;
-				} else {
-					log_("Error", "input start_line error");
-					exit(1);
-				}
-				prev_state = state;
-				break;
-			}
-			case date: {
-				while (it != buf.end() && !syntax_(sep_, *it) && *it != '\n') {
-					temp_string += *it;
-					++it;
-				}
-				if (it == buf.end()) {
-					input.insert(std::make_pair(temp_string, ""));
-					state = end;
-				} else if (syntax_(sep_, *it) && temp_string.size() == 10) {
-					date_string = temp_string;
-					state		= next_state;
-					next_state	= value;
-				} else {
-					input.insert(std::make_pair(date_string, ""));
-					state = skip;
-				}
-				temp_string.clear();
-				prev_state = state;
-				break;
-			}
-			case separator: {
-				while (it != buf.end() && *it == ' ') {
-					++it;
-				}
-				if (it == buf.end()) {
-					input.insert(std::make_pair(date_string, ""));
-					state = end;
-				} else if (*it == '|') {
-					state	   = next_state;
-					next_state = newline;
-					++it;
-				} else {
-					input.insert(std::make_pair(date_string, ""));
-					state = skip;
-				}
-				while (it != buf.end() && *it == ' ') {
-					++it;
-				}
-				prev_state = state;
-			}
-			case value: {
-			}
-			case skip: {
-				while (it != buf.end() && *it != '\n') {
-					++it;
-				}
-				if (it == buf.end()) {
-					state = end;
-				} else if (*it == '\n') {
-					state	   = newline;
-					next_state = date;
-				}
-				break;
-			}
-			case newline: {
-				if (it == buf.end()) {
-					state = end;
-				} else if (*it == '\n') {
-					state	   = next_state;
-					next_state = separator;
-					++it;
-				} else {
-					state	   = skip;
-					next_state = newline;
-				}
-				prev_state = state;
-				break;
-			}
-			case end: {
-				break;
-			}
-			default: {
-				log_("Error", "state error");
-				exit(1);
-			}
-			}
-			return input;
-		}
+		return input;
 	}
-
 } // namespace
 
 __NS__::BitcoinExchange(const char* csv_file) {
@@ -409,6 +308,10 @@ __NS__::operator=(__NS__::const_reference from) {
 }
 
 void
+__NS__::find_and_exchange_(std::string date, double value) {
+}
+
+void
 __NS__::exchange(const char* input) {
 	std::fstream file;
 
@@ -423,10 +326,25 @@ __NS__::exchange(const char* input) {
 			log_("Error", "ss error");
 			exit(1);
 		}
-		std::map<std::string, std::string> input = input_check_(ss.str());
-		for (std::map<std::string, std::string>::const_iterator it = input.begin(); it != input.end(); ++it) {
 
-			std::cout << it->first << " " << it->second << std::endl;
+		void (*process_[6])(check_t) = {
+			bad_date_,
+			bad_value_,
+			too_large_,
+			negative_,
+			NULL,
+			NULL
+		};
+
+		std::string buf = ss.str();
+
+		while (!buf.empty()) {
+			check_t check = parse_input_data_(buf);
+			if (check.error_state != none) {
+				process_[check.error_state](check);
+			} else {
+				find_and_exchange_(check);
+			}
 		}
 
 	} else {
