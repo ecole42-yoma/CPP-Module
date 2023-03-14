@@ -415,7 +415,9 @@ __NS__::find_and_exchange_(check_t check) {
 	} else {
 		container::iterator lower_data = data_.lower_bound(check.date);
 		if (lower_data != data_.end()) {
-			--lower_data;
+			if (lower_data != data_.begin()) {
+				--lower_data;
+			}
 			std::cout << check.date << " => " << check.value << " = ";
 			std::cout << lower_data->second * check.value << std::endl;
 		} else {
