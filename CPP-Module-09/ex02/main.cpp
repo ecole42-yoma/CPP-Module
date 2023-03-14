@@ -28,14 +28,15 @@ namespace {
 
 	inline void
 	print_before_(int argc, char** argv) {
-		std::cout << "Before:" << std::setw(4);
+		std::cout << "\nBefore:" << std::setw(4);
 		for (int i = 1; i < argc; ++i) {
 			std::cout << std::setw(4) << argv[i] << " ";
 			if (i % 10 == 0) {
 				std::cout << std::endl;
 			}
 		}
-		std::cout << std::endl;
+		std::cout << "\n"
+				  << std::endl;
 	}
 
 } // namespace
@@ -44,6 +45,7 @@ int
 main(int argc, char** argv) {
 	if (argc == 1) {
 		log_("Error", "./PmergeMe \"numbers...\"");
+		exit(1);
 	}
 
 	posi_vector		 vector;
