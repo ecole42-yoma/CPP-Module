@@ -4,7 +4,7 @@ SRC		=	main.cpp\
 			RPN.cpp
 
 
-LOG		=	-DLOG
+# LOG		=	-DLOG
 
 # CXXFLAGS +=
 

@@ -6,6 +6,14 @@
 
 namespace {
 
+template <typename _Tp> inline void debug__(_Tp unit) {
+#ifdef LOG
+  std::cout << "log : " << unit << std::endl;
+#else
+  (void)unit;
+#endif
+}
+
 inline void log_(const char *s1, const char *s2 = NULL) {
   std::cout << s1;
   if (s2 != NULL) {
@@ -32,10 +40,14 @@ const int accepted_[] = {
     0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
 };
 
-inline int add_(int a, int b) { return a + b; }
-inline int sub_(int a, int b) { return a - b; }
-inline int mul_(int a, int b) { return a * b; }
-inline int div_(int a, int b) { return a / b; }
+#define __type__ template <typename _Tp>
+
+__type__ inline _Tp add_(_Tp a, _Tp b) { return a + b; }
+__type__ inline _Tp sub_(_Tp a, _Tp b) { return a - b; }
+__type__ inline _Tp mul_(_Tp a, _Tp b) { return a * b; }
+__type__ inline _Tp div_(_Tp a, _Tp b) { return a / b; }
+
+#undef __type__
 
 inline int select_oper_(const char op) {
   switch (op) {
@@ -76,7 +88,7 @@ __NS__::reference __NS__::operator=(__NS__::const_reference from) {
 void __NS__::process_() {
   std::string::const_iterator it = expression_.begin();
 
-  int (*calcul_[5])(int, int) = {
+  float (*calcul_[5])(float, float) = {
       add_, sub_, mul_, div_, NULL,
   };
 
@@ -94,7 +106,7 @@ void __NS__::process_() {
   typedef enum { add = 0, sub, mul, div, error } op_e;
   op_e current_operator;
 
-  std::stack<int> pool;
+  std::stack<float> pool;
 
   state = rpn_start;
   while (state != rpn_end) {
@@ -105,6 +117,13 @@ void __NS__::process_() {
     }
 
     case rpn_validation: {
+      while (it != expression_.end() && *it == ' ') {
+        ++it;
+      }
+      if (it == expression_.end()) {
+        state = rpn_end;
+        break;
+      }
       if (it != expression_.end() && syntax_(accepted_, *it)) {
         if (std::isdigit(*it)) {
           state = rpn_space;
@@ -133,12 +152,16 @@ void __NS__::process_() {
     }
 
     case rpn_op: {
-      int b = pool.top();
-      pool.pop();
-      int a = pool.top();
+      float b = pool.top();
+      debug__(b);
       pool.pop();
 
-      int result = calcul_[current_operator](a, b);
+      float a = pool.top();
+      debug__(a);
+      pool.pop();
+
+      float result = calcul_[current_operator](a, b);
+      debug__(result);
       pool.push(result);
 
       prev_state = state;
