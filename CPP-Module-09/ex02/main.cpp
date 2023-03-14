@@ -1,6 +1,7 @@
 #include "PmergeMe.hpp"
 #include <cctype>
 #include <cstdlib>
+#include <set>
 
 namespace {
 	inline void
@@ -27,7 +28,7 @@ namespace {
 
 	inline void
 	print_before_(int argc, char** argv) {
-		std::cout << "Before: \t";
+		std::cout << "Before:" << std::setw(4);
 		for (int i = 1; i < argc; ++i) {
 			std::cout << argv[i] << " ";
 		}
@@ -38,26 +39,35 @@ namespace {
 
 int
 main(int argc, char** argv) {
-	if (argc != 2) {
+	if (argc == 1) {
 		log_("Error", "./PmergeMe \"numbers...\"");
 	}
 
-	posi_vector vector;
-	posi_deque	deque;
+	posi_vector		 vector;
+	posi_deque		 deque;
+	std::set<size_t> set_for_dup;
 
 	for (int i = 1; i < argc; ++i) {
 		if (is_positive_number_(argv[i])) {
-			vector.push_back(std::atoi(argv[i]));
-			deque.push_back(std::atoi(argv[i]));
+			size_t temp = std::atoi(argv[i]);
+			if (temp <= 0) {
+				log_("Error", "Number must be positive");
+				exit(1);
+			}
+			if (set_for_dup.find(temp) != set_for_dup.end()) {
+				log_("Error", "Duplicate number");
+				exit(1);
+			}
+			set_for_dup.insert(temp);
+			vector.push_back(temp);
+			deque.push_back(temp);
 		} else {
 			log_("Error");
 			exit(1);
 		}
 	}
+
 	print_before_(argc, argv);
-	for (int i = 1; i < argc; ++i) {
-		std::cout << argv[i] << " ";
-	}
 
 	PmergeMe<posi_vector> vector_merge(vector, print_on);
 	PmergeMe<posi_deque>  deque_merge(deque, print_off);
