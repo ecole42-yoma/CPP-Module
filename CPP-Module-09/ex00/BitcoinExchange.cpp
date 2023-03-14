@@ -14,33 +14,33 @@ namespace {
 		return (table[(c >> 5)] & (1U << (c & 0x1f)));
 	}
 
-	const int sep_[] = {
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		/*				?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
-		0x00000001, /*	0000 0000 0000 0000  0000 0000 0000 0001 */
-		/*				_^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
-		0x00000000, /*	0000 0000 0000 0000. 0000 0000 0000 0000 */
-		/*				 ~}| {zyx wvut srqp  onml kjih gfed cba` */
-		0x10000000, /*	0001 0000 0000 0000  0000 0000 0000 0000 */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-	};
+	// const int sep_[] = {
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	/*				?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
+	// 	0x00000001, /*	0000 0000 0000 0000  0000 0000 0000 0001 */
+	// 	/*				_^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
+	// 	0x00000000, /*	0000 0000 0000 0000. 0000 0000 0000 0000 */
+	// 	/*				 ~}| {zyx wvut srqp  onml kjih gfed cba` */
+	// 	0x10000000, /*	0001 0000 0000 0000  0000 0000 0000 0000 */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// };
 
-	const int input_value_[] = {
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		/*				?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
-		0x03ff6000, /*	0000 0011 1111 1111  0110 0000 0000 0000 */
-		/*				_^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
-		0x00000000, /*	0000 0000 0000 0000. 0000 0000 0000 0000 */
-		/*				 ~}| {zyx wvut srqp  onml kjih gfed cba` */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
-	};
+	// const int input_value_[] = {
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	/*				?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
+	// 	0x03ff6000, /*	0000 0011 1111 1111  0110 0000 0000 0000 */
+	// 	/*				_^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
+	// 	0x00000000, /*	0000 0000 0000 0000. 0000 0000 0000 0000 */
+	// 	/*				 ~}| {zyx wvut srqp  onml kjih gfed cba` */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// 	0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
+	// };
 
 	const int value_[] = {
 		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
@@ -67,12 +67,12 @@ namespace {
 
 	inline void
 	bad_date_(check_t check) {
-		std::cout << "Error: bad input => ";
+		std::cout << "Error: bad input : date : => ";
 		std::cout << check.date << std::endl;
 	}
 	inline void
 	bad_value_(check_t check) {
-		std::cout << "Error: bad input => ";
+		std::cout << "Error: bad input : value : => ";
 		std::cout << check.date << std::endl;
 	}
 	inline void
@@ -81,7 +81,7 @@ namespace {
 	}
 	inline void
 	negative_(check_t check) {
-		std::cout << "Error: no a positive number : " << check.value << std::endl;
+		std::cout << "Error: not a positive number : " << check.value << std::endl;
 	}
 
 	inline std::map<std::string, double>
@@ -264,7 +264,93 @@ namespace {
 	inline check_t
 	parse_input_data_(std::string& buf) {
 		check_t input;
+		input.error_state = none;
 
+		std::string::size_type pos = buf.find_first_of('\n');
+		std::string			   temp_value("0");
+		int					   value_error = 0;
+		int					   count_comma = 0;
+
+		if (pos == std::string::npos) {
+			std::string::size_type pos = buf.find_first_of('|');
+			if (pos == std::string::npos) {
+				for (std::string::iterator it = buf.begin(); it != buf.end(); ++it) {
+					input.date += *it;
+				}
+			} else {
+				std::string date = buf.substr(0, pos);
+				for (std::string::iterator it = date.begin(); it != date.end(); ++it) {
+					if (*it != ' ') {
+						input.date += *it;
+					}
+				}
+				buf.erase(0, pos + 1);
+				for (std::string::iterator it = buf.begin(); it != buf.end(); ++it) {
+					if (*it == '.') {
+						count_comma++;
+					}
+					if (count_comma > 1) {
+						value_error = 1;
+					}
+					temp_value += *it;
+				}
+			}
+			buf.clear();
+		} else {
+			std::string temp_line = buf.substr(0, pos);
+			buf.erase(0, pos + 1);
+
+			std::string::size_type pos_sep = temp_line.find_first_of('|');
+			if (pos_sep == std::string::npos) {
+				for (std::string::iterator it = temp_line.begin(); it != temp_line.end(); ++it) {
+					if (*it != ' ') {
+						input.date += *it;
+					}
+				}
+			} else {
+				std::string date = temp_line.substr(0, pos_sep);
+				for (std::string::iterator it = date.begin(); it != date.end(); ++it) {
+					if (*it != ' ') {
+						input.date += *it;
+					}
+				}
+				temp_line.erase(0, pos_sep + 1);
+				for (std::string::iterator it = temp_line.begin(); it != temp_line.end(); ++it) {
+					if (*it == '.') {
+						count_comma++;
+					}
+					if (count_comma > 1) {
+						value_error = 1;
+					}
+					temp_value += *it;
+				}
+			}
+		}
+		if (input.date.size() != 10) {
+			input.error_state = bad_date;
+		} else if (input.date.empty()) {
+			input.error_state = end;
+		} else if (value_error) {
+			input.error_state = bad_value;
+			input.date		  = temp_value;
+		}
+		if (!value_error) {
+			std::stringstream ss;
+			ss << temp_value;
+			ss >> input.value;
+			if (input.error_state == none) {
+				if (ss.fail()) {
+					input.error_state = bad_value;
+					input.date		  = temp_value;
+				}
+				if (input.value < 0) {
+					input.error_state = negative;
+				}
+				if (input.value > 1000) {
+					input.error_state = too_large;
+				}
+			}
+		}
 		return input;
 	}
 } // namespace
@@ -308,7 +394,15 @@ __NS__::operator=(__NS__::const_reference from) {
 }
 
 void
-__NS__::find_and_exchange_(std::string date, double value) {
+__NS__::find_and_exchange_(check_t check) {
+	std::cout << check.date << " => " << check.value << " = " << check.date.size() << std::endl;
+	container::iterator is_exist = data_.find(check.date);
+	if (is_exist != data_.end()) {
+		std::cout << check.date << " => " << check.value << " = ";
+		std::cout << is_exist->second * check.value << std::endl;
+	} else {
+		std::cout << "Error: bad input => " << check.date << std::endl;
+	}
 }
 
 void
@@ -327,23 +421,37 @@ __NS__::exchange(const char* input) {
 			exit(1);
 		}
 
-		void (*process_[6])(check_t) = {
+		void (*process_[7])(check_t) = {
 			bad_date_,
 			bad_value_,
 			too_large_,
 			negative_,
 			NULL,
+			NULL,
 			NULL
 		};
 
 		std::string buf = ss.str();
+		if (buf.empty()) {
+			log_("Error", "buf is empty");
+			exit(1);
+		}
+		std::string::size_type pos = buf.find_first_of('\n');
+		if (buf.substr(0, pos) == "date | value") {
+			buf.erase(0, pos + 1);
+		} else {
+			log_("Error", "bad start line of input file");
+			exit(1);
+		}
 
 		while (!buf.empty()) {
 			check_t check = parse_input_data_(buf);
-			if (check.error_state != none) {
+			if (check.error_state != none && check.error_state != end) {
 				process_[check.error_state](check);
-			} else {
+			} else if (check.error_state == none) {
 				find_and_exchange_(check);
+			} else {
+				break;
 			}
 		}
 

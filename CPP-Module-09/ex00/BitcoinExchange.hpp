@@ -12,7 +12,8 @@ typedef enum error_state_e {
 	bad_value,
 	too_large,
 	negative,
-	none
+	none,
+	end
 } error_state_t;
 
 typedef struct check_s {
@@ -30,7 +31,7 @@ public:
 private:
 	container data_;
 
-	void find_and_exchange_(std::string date, double value);
+	void find_and_exchange_(check_t check);
 
 public:
 	BitcoinExchange(const char* csv_file = "./data.csv");
