@@ -1,9 +1,9 @@
 #pragma once
 
-#include <sys/wait.h>
 #ifndef __BITCOIN_EXCHANGE_HPP__
 #define __BITCOIN_EXCHANGE_HPP__
 
+#include <iostream>
 #include <map>
 #include <string>
 
@@ -21,15 +21,15 @@ public:
 
 private:
   data_set_t data_;
+  //   float search(int, int, int);
 
 public:
-  BitcoinExchange(const std::string &csv_file = "./data.csv");
+  BitcoinExchange(const char *csv_file = "./data.csv");
   ~BitcoinExchange();
   BitcoinExchange(const_reference from);
   reference operator=(const_reference from);
 
-  float search(int, int, int);
-  void exchange(int, int, int, int);
+  void exchange(const char *input);
 };
 
 #endif
