@@ -267,8 +267,9 @@ namespace {
 		input.error_state = none;
 
 		std::string::size_type pos = buf.find_first_of('\n');
-		std::string			   temp_value("0");
+		std::string			   temp_value;
 		int					   value_error = 0;
+		int					   skip_value  = 0;
 		int					   count_comma = 0;
 
 		if (pos == std::string::npos) {
@@ -277,6 +278,7 @@ namespace {
 				for (std::string::iterator it = buf.begin(); it != buf.end(); ++it) {
 					input.date += *it;
 				}
+				skip_value = 1;
 			} else {
 				std::string date = buf.substr(0, pos);
 				for (std::string::iterator it = date.begin(); it != date.end(); ++it) {
@@ -307,6 +309,7 @@ namespace {
 						input.date += *it;
 					}
 				}
+				skip_value = 1;
 			} else {
 				std::string date = temp_line.substr(0, pos_sep);
 				for (std::string::iterator it = date.begin(); it != date.end(); ++it) {
@@ -340,11 +343,17 @@ namespace {
 			ss >> input.value;
 			if (input.error_state == none) {
 				if (ss.fail()) {
-					input.error_state = bad_value;
-					input.date		  = temp_value;
+					if (!skip_value) {
+						input.error_state = bad_value;
+						input.date		  = temp_value;
+					}
 				}
 				if (input.value < 0) {
-					input.error_state = negative;
+					if (!skip_value) {
+						input.error_state = negative;
+					} else {
+						input.value = 0;
+					}
 				}
 				if (input.value > 1000) {
 					input.error_state = too_large;
@@ -395,13 +404,23 @@ __NS__::operator=(__NS__::const_reference from) {
 
 void
 __NS__::find_and_exchange_(check_t check) {
-	std::cout << check.date << " => " << check.value << " = " << check.date.size() << std::endl;
+	if (check.date[5] > '1' || check.date[8] > '3') {
+		std::cout << "Error: bad input => " << check.date << std::endl;
+		return;
+	}
 	container::iterator is_exist = data_.find(check.date);
 	if (is_exist != data_.end()) {
 		std::cout << check.date << " => " << check.value << " = ";
 		std::cout << is_exist->second * check.value << std::endl;
 	} else {
-		std::cout << "Error: bad input => " << check.date << std::endl;
+		container::iterator lower_data = data_.lower_bound(check.date);
+		if (lower_data != data_.end()) {
+			--lower_data;
+			std::cout << check.date << " => " << check.value << " = ";
+			std::cout << lower_data->second * check.value << std::endl;
+		} else {
+			std::cout << "Error: bad input => " << check.date << std::endl;
+		}
 	}
 }
 
