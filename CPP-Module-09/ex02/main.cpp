@@ -30,7 +30,10 @@ namespace {
 	print_before_(int argc, char** argv) {
 		std::cout << "Before:" << std::setw(4);
 		for (int i = 1; i < argc; ++i) {
-			std::cout << argv[i] << " ";
+			std::cout << std::setw(4) << argv[i] << " ";
+			if (i % 10 == 0) {
+				std::cout << std::endl;
+			}
 		}
 		std::cout << std::endl;
 	}

@@ -17,7 +17,7 @@ namespace {
 	}
 
 	inline void
-	syntax_date_()
+	syntax_date_() { }
 
 } // namespace
 

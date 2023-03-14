@@ -82,10 +82,14 @@ __TP__
 void
 __NS__::print_after_() {
 	std::cout << "After:" << std::setw(5);
+	size_t i = 1;
 	for (typename __NS__::container::iterator it = data_.begin();
 		 it != data_.end();
-		 ++it) {
-		std::cout << *it << " ";
+		 ++it, ++i) {
+		std::cout << std::setw(4) << *it << " ";
+		if (i % 10 == 0) {
+			std::cout << std::endl;
+		}
 	}
 	std::cout << std::endl;
 }
@@ -107,11 +111,11 @@ __NS__::sort_() {
 	long seconds	  = end.tv_sec - start.tv_sec;
 	long microseconds = end.tv_usec - start.tv_usec;
 	if (microseconds < 0) {
-		microseconds += 1000;
+		microseconds += 1e+6;
 		seconds -= 1;
 	}
 	std::cout << "Time to process a range of 5 elements with std::[..] : ";
-	std::cout << std::setw(3) << seconds * 1000000 << ".";
+	std::cout << std::setw(3) << seconds * 1e+6 << ".";
 	std::cout << std::setfill('0') << std::setw(6) << microseconds;
 	std::cout << " us" << std::setfill(' ') << std::endl;
 }
