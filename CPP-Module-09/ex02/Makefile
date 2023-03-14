@@ -4,7 +4,9 @@ SRC		=	main.cpp\
 			PmergeMe.cpp
 
 
-LOG		=	-DLOG
+# LOG		=	-DLOG
+
+# LOG += -DK_SIZE=7
 
 # CXXFLAGS +=
 
