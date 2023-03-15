@@ -6,16 +6,6 @@
 
 namespace {
 
-	template <typename _Tp>
-	inline void
-	debug__(_Tp unit) {
-#ifdef LOG
-		std::cout << "log : " << unit << std::endl;
-#else
-		(void)unit;
-#endif
-	}
-
 	inline void
 	log_(const char* s1, const char* s2 = NULL) {
 		std::cout << s1;
@@ -78,8 +68,8 @@ namespace {
 __NS__::RPN(const char* exp)
 	: expression_(exp) {
 	if (exp == NULL) {
-		log_("Error");
-		exit(1);
+		log_("Error", "expression is NULL");
+		std::exit(1);
 	}
 	this->process_();
 }
@@ -100,7 +90,7 @@ void
 __NS__::process_() {
 	std::string::const_iterator it = expression_.begin();
 
-	float (*calcul_[5])(float, float) = {
+	double (*calcul_[5])(double, double) = {
 		add_,
 		sub_,
 		mul_,
@@ -126,7 +116,7 @@ __NS__::process_() {
 				   error } op_e;
 	op_e current_operator;
 
-	std::stack<float> pool;
+	std::stack<double> pool;
 
 	state = rpn_start;
 	while (state != rpn_end) {
@@ -172,16 +162,13 @@ __NS__::process_() {
 		}
 
 		case rpn_op: {
-			float b = pool.top();
-			debug__(b);
+			double b = pool.top();
 			pool.pop();
 
-			float a = pool.top();
-			debug__(a);
+			double a = pool.top();
 			pool.pop();
 
-			float result = calcul_[current_operator](a, b);
-			debug__(result);
+			double result = calcul_[current_operator](a, b);
 			pool.push(result);
 
 			prev_state = state;
