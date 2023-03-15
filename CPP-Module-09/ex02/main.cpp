@@ -11,10 +11,11 @@ namespace {
 			std::cout << ": " << s2;
 		}
 		std::cout << std::endl;
+		std::exit(1);
 	}
 
 	inline bool
-	is_positive_number_(const char* s) {
+	is_number_(const char* s) {
 		if (s == NULL) {
 			return false;
 		}
@@ -26,26 +27,12 @@ namespace {
 		return true;
 	}
 
-	inline void
-	print_before_(int argc, char** argv) {
-		std::cout << "\nBefore:" << std::setw(4);
-		for (int i = 1; i < argc; ++i) {
-			std::cout << std::setw(4) << argv[i] << " ";
-			if (i % 10 == 0) {
-				std::cout << std::endl;
-			}
-		}
-		std::cout << "\n"
-				  << std::endl;
-	}
-
 } // namespace
 
 int
 main(int argc, char** argv) {
 	if (argc == 1) {
-		log_("Error", "./PmergeMe \"numbers...\"");
-		exit(1);
+		log_("Error", "./PmergeMe \"...numbers\"");
 	}
 
 	posi_vector		 vector;
@@ -53,26 +40,21 @@ main(int argc, char** argv) {
 	std::set<size_t> set_for_dup;
 
 	for (int i = 1; i < argc; ++i) {
-		if (is_positive_number_(argv[i])) {
+		if (is_number_(argv[i])) {
 			size_t temp = std::atoi(argv[i]);
 			if (temp <= 0) {
 				log_("Error", "Number must be positive");
-				exit(1);
 			}
 			if (set_for_dup.find(temp) != set_for_dup.end()) {
 				log_("Error", "Duplicate number");
-				exit(1);
 			}
 			set_for_dup.insert(temp);
 			vector.push_back(temp);
 			deque.push_back(temp);
 		} else {
-			log_("Error");
-			exit(1);
+			log_("Error", "digit only");
 		}
 	}
-
-	print_before_(argc, argv);
 
 	PmergeMe<posi_vector> vector_merge(vector, print_on);
 	PmergeMe<posi_deque>  deque_merge(deque, print_off);

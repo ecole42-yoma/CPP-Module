@@ -12,6 +12,8 @@
 #include <iomanip>
 #include <sys/time.h>
 
+#include "util.hpp"
+
 #ifndef K_SIZE
 #define K_SIZE 5
 #endif
@@ -33,13 +35,13 @@ public:
 	typedef const PmergeMe& const_reference;
 	typedef PmergeMe&		reference;
 	typedef _Tp				container;
-	// typedef container::value_type value_type;
 
 private:
 	container	 data_;
 	print_mode_e mode_;
 
-	void print_after_();
+	void print_(const char* msg = "Before ", const char* color = COLOR_RESET);
+	void print_time_(struct timeval start, struct timeval end);
 
 	void sort_();
 	void sort_work_(size_t start, size_t end);
@@ -57,7 +59,29 @@ __TP__
 __NS__::PmergeMe(__NS__::container init, print_mode_e mode)
 	: data_(init)
 	, mode_(mode) {
+	if (mode_ == print_on) {
+		print_("Before ", COLOR_RESET);
+	}
+
+	struct timeval start, end;
+	gettimeofday(&start, NULL);
+
 	sort_();
+
+	gettimeofday(&end, NULL);
+
+	if (mode_ == print_on) {
+#ifdef LOG
+		if (std::is_sorted(data_.begin(), data_.end())) {
+			print_("After", COLOR_GREEN);
+		} else {
+			print_("After", COLOR_RED);
+		}
+#else
+		print_("After");
+#endif
+	}
+	print_time_(start, end);
 }
 
 __TP__
@@ -80,9 +104,11 @@ __NS__::operator=(__NS__::const_reference from) {
 
 __TP__
 void
-__NS__::print_after_() {
-	std::cout << "After:" << std::setw(5);
+__NS__::print_(const char* msg, const char* color) {
 	size_t i = 1;
+
+	std::cout << "\n"
+			  << color << msg << std::endl;
 	for (typename __NS__::container::iterator it = data_.begin();
 		 it != data_.end();
 		 ++it, ++i) {
@@ -91,23 +117,12 @@ __NS__::print_after_() {
 			std::cout << std::endl;
 		}
 	}
-	std::cout << std::endl;
+	std::cout << COLOR_RESET << std::endl;
 }
 
 __TP__
 void
-__NS__::sort_() {
-
-	struct timeval start, end;
-	gettimeofday(&start, NULL);
-
-	sort_work_(0, data_.size());
-
-	gettimeofday(&end, NULL);
-
-	if (mode_ == print_on) {
-		print_after_();
-	}
+__NS__::print_time_(struct timeval start, struct timeval end) {
 	long seconds	  = end.tv_sec - start.tv_sec;
 	long microseconds = end.tv_usec - start.tv_usec;
 	if (microseconds < 0) {
@@ -118,6 +133,12 @@ __NS__::sort_() {
 	std::cout << std::setw(3) << seconds * 1e+6 << ".";
 	std::cout << std::setfill('0') << std::setw(6) << microseconds;
 	std::cout << " us" << std::setfill(' ') << std::endl;
+}
+
+__TP__
+void
+__NS__::sort_() {
+	sort_work_(0, data_.size());
 }
 
 __TP__
@@ -167,12 +188,11 @@ __TP__
 void
 __NS__::insert_work_(size_t start, size_t end) {
 	for (size_t i = start; i < end - 1; i++) {
-		size_t temp = data_[i + 1];
 		size_t j	= i + 1;
+		size_t temp = data_[j];
 
-		while (j > start && data_[j - 1] > temp) {
+		for (; j > start && data_[j - 1] > temp; --j) {
 			data_[j] = data_[j - 1];
-			j--;
 		}
 		data_[j] = temp;
 	}
