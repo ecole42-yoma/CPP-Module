@@ -332,7 +332,7 @@ __NS__::BitcoinExchange(char** argv) {
 		argv = &argv[1];
 	} else {
 		init_db_("data.csv");
-		std::cout << "Info: ./data.csv is used as database" << std::endl;
+		std::cout << COLOR_BLUE << "Info: ./data.csv is used as database" << COLOR_RESET << std::endl;
 	}
 	for (size_t i = 0; argv[i] != NULL; ++i) {
 		exchange_(argv[i]);
