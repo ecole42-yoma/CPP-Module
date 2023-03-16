@@ -58,8 +58,8 @@ main(int argc, char** argv) {
 	PmergeMe<posi_vector> vector_merge_fake(vector, print_on);
 	PmergeMe<posi_deque>  deque_merge_fake(deque, print_off);
 
-	PmergeMe<posi_vector> vector_merge_real(vector, print_on, real_merge_insert);
-	PmergeMe<posi_deque>  deque_merge_real(deque, print_off, real_merge_insert);
+	// PmergeMe<posi_vector> vector_merge_real(vector, print_on, real_merge_insert);
+	// PmergeMe<posi_deque>  deque_merge_real(deque, print_off, real_merge_insert);
 
 	return 0;
 }

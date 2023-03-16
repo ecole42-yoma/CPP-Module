@@ -53,13 +53,14 @@ private:
 	void print_(const char* msg = "Before ", const char* color = COLOR_RESET);
 	void print_time_();
 
+	void select_sort_(sort_mode_e sort_mode);
+
 	void sort_fake_merge_insert_();
-	void sort_real_merge_insert_();
 	void fake_work_(size_t start, size_t end);
 	void fake_merge_work_(size_t start, size_t middle, size_t end);
 	void fake_insert_work_(size_t start, size_t end);
 
-	void select_sort_(sort_mode_e sort_mode);
+	void sort_real_merge_insert_();
 
 public:
 	PmergeMe(container init = container(), print_mode_e print_mode = print_off, sort_mode_e sort_mode = fake_merge_insert);
@@ -218,7 +219,6 @@ __NS__::fake_insert_work_(size_t start, size_t end) {
 __TP__
 void
 __NS__::sort_real_merge_insert_() {
-	real_work_(0, data_.size());
 }
 
 #undef __NS__

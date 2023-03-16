@@ -1,5 +1,6 @@
 #include "RPN.hpp"
 #include <cctype>
+#include <cstddef>
 #include <iostream>
 
 #define __NS__ RPN
@@ -13,6 +14,7 @@ namespace {
 			std::cout << ": " << s2;
 		}
 		std::cout << std::endl;
+		std::exit(1);
 	}
 
 	inline bool
@@ -47,7 +49,7 @@ namespace {
 
 #undef __type__
 
-	inline int
+	inline size_t
 	select_oper_(const char op) {
 		switch (op) {
 		case '+':
@@ -63,13 +65,86 @@ namespace {
 		}
 	}
 
+	inline void
+	internal_process__(std::string::const_iterator it, std::stack<double>& stack, const std::string& expression) {
+		static double (*calcul_[5])(double, double) = {
+			add_,
+			sub_,
+			mul_,
+			div_,
+			NULL,
+		};
+		state_t state = rpn_skip;
+
+		while (state != rpn_end) {
+			switch (state) {
+			case rpn_skip: {
+				while (it != expression.end() && *it == ' ') {
+					++it;
+				}
+				if (it == expression.end()) {
+					state = rpn_end;
+				} else {
+					state = rpn_validation;
+				}
+				break;
+			}
+			case rpn_validation: {
+				if (syntax_(accepted_, *it)) {
+					if (std::isdigit(*it)) {
+						state = rpn_number;
+					} else {
+						state = rpn_op;
+					}
+				} else {
+					state = rpn_error;
+				}
+				break;
+			}
+			case rpn_number: {
+				stack.push(*it - '0');
+				++it;
+				state = rpn_skip;
+				break;
+			}
+			case rpn_op: {
+				if (stack.size() < 2) {
+					state = rpn_error;
+				} else {
+					double b = stack.top();
+					stack.pop();
+					double a = stack.top();
+					stack.pop();
+					stack.push(calcul_[select_oper_(*it)](a, b));
+					++it;
+					state = rpn_skip;
+				}
+				break;
+			}
+			case rpn_error: {
+				log_("Error", "Invalid character or syntax");
+				state = rpn_end;
+				break;
+			}
+			case rpn_end: {
+			} break;
+			default: {
+				log_("Error", "Unknown state");
+				state = rpn_end;
+				break;
+			}
+			}
+		}
+		if (stack.size() != 1) {
+			log_("Error", "some operands are missing");
+		}
+	}
 } // namespace
 
 __NS__::RPN(const char* exp)
 	: expression_(exp) {
 	if (exp == NULL) {
 		log_("Error", "expression is NULL");
-		std::exit(1);
 	}
 	this->process_();
 }
@@ -89,128 +164,10 @@ __NS__::operator=(__NS__::const_reference from) {
 void
 __NS__::process_() {
 	std::string::const_iterator it = expression_.begin();
+	std::stack<double>			stack;
 
-	double (*calcul_[5])(double, double) = {
-		add_,
-		sub_,
-		mul_,
-		div_,
-		NULL,
-	};
-
-	enum {
-		rpn_start = 0,
-		rpn_validation,
-		rpn_number,
-		rpn_op,
-		rpn_space,
-		rpn_error,
-		rpn_end
-	} state,
-		prev_state;
-
-	typedef enum { add = 0,
-				   sub,
-				   mul,
-				   div,
-				   error } op_e;
-	op_e current_operator;
-
-	std::stack<double> pool;
-
-	state = rpn_start;
-	while (state != rpn_end) {
-		switch (state) {
-		case rpn_start: {
-			state = rpn_validation;
-			break;
-		}
-
-		case rpn_validation: {
-			while (it != expression_.end() && *it == ' ') {
-				++it;
-			}
-			if (it == expression_.end()) {
-				state = rpn_end;
-				break;
-			}
-			if (it != expression_.end() && syntax_(accepted_, *it)) {
-				if (std::isdigit(*it)) {
-					state = rpn_space;
-					pool.push(*it - '0');
-				} else {
-					if (pool.size() < 2) {
-						state = rpn_error;
-					} else {
-						state			 = rpn_op;
-						current_operator = static_cast<op_e>(select_oper_(*it));
-						if (current_operator == error) {
-							state = rpn_error;
-						}
-					}
-				}
-				++it;
-			} else {
-				state = rpn_error;
-			}
-			prev_state = state;
-			break;
-		}
-
-		case rpn_number: {
-			break;
-		}
-
-		case rpn_op: {
-			double b = pool.top();
-			pool.pop();
-
-			double a = pool.top();
-			pool.pop();
-
-			double result = calcul_[current_operator](a, b);
-			pool.push(result);
-
-			prev_state = state;
-			state	   = rpn_space;
-			break;
-		}
-
-		case rpn_space: {
-			if (it == expression_.end()) {
-				state = rpn_end;
-				break;
-			} else if (*it != ' ') {
-				state = rpn_error;
-			} else {
-				state = rpn_validation;
-			}
-			++it;
-			break;
-		}
-
-		case rpn_end: {
-			break;
-		}
-
-		case rpn_error: {
-			log_("Error");
-			exit(1);
-		}
-
-		default: {
-			log_("Error");
-			exit(1);
-		}
-		}
-	}
-
-	if (pool.size() != 1) {
-		log_("Error");
-		exit(1);
-	} else {
-		std::cout << pool.top() << std::endl;
-	}
+	internal_process__(it, stack, expression_);
+	std::cout << "> Result: " << stack.top() << std::endl;
 }
 
 #undef __NS__
