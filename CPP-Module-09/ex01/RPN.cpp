@@ -1,4 +1,5 @@
 #include "RPN.hpp"
+#include "util.hpp"
 #include <cctype>
 #include <cstddef>
 #include <iostream>
@@ -9,7 +10,7 @@ namespace {
 
 	inline void
 	log_(const char* s1, const char* s2 = NULL) {
-		std::cout << s1;
+		std::cout << COLOR_RED << s1 << COLOR_RESET;
 		if (s2 != NULL) {
 			std::cout << ": " << s2;
 		}
