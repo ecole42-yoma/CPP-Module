@@ -7,6 +7,8 @@
 #include <map>
 #include <string>
 
+#include "util.hpp"
+
 typedef enum error_state_e {
 	bad_date = 0,
 	bad_value,
@@ -31,15 +33,15 @@ public:
 private:
 	container data_;
 
+	void init_db_(std::string db_file);
 	void find_and_exchange_(check_t check);
+	void exchange_(const char* input);
 
 public:
-	BitcoinExchange(const char* csv_file = "./data.csv");
+	BitcoinExchange(char** argv = NULL);
 	~BitcoinExchange();
 	BitcoinExchange(const_reference from);
 	reference operator=(const_reference from);
-
-	void exchange(const char* input);
 };
 
 #endif
