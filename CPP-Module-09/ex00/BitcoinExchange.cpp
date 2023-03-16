@@ -371,7 +371,7 @@ __NS__::init_db_(std::string db_file) {
 			} else {
 				continue;
 			}
-		} else if (buf[0] == '#' || buf[0] == '\n') {
+		} else if (buf[0] == '#' || buf[0] == '\n' || buf.size() == 0) {
 			continue;
 		} else {
 			check_t check = check_basic_line_(buf, ",");
