@@ -17,7 +17,7 @@ namespace {
 	const int date_[] = {
 		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
 		/*				?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
-		0x03ff2000, /*	0000 0011 1111 1111  0010 0000 0000 0000 */
+		0x03ff0000, /*	0000 0011 1111 1111  0000 0000 0000 0000 */
 		/*				_^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
 		0x00000000, /*	0000 0000 0000 0000. 0000 0000 0000 0000 */
 		/*				 ~}| {zyx wvut srqp  onml kjih gfed cba` */
@@ -31,7 +31,7 @@ namespace {
 	const int value_[] = {
 		0x00000000, /*	0000 0000 0000 0000  0000 0000 0000 0000 */
 		/*				?>=< ;:98 7654 3210  /.-, +*)( '&%$ #"!  */
-		0x03ff4000, /*	0000 0011 1111 1111  0100 0000 0000 0000 */
+		0x03ff0000, /*	0000 0011 1111 1111  0000 0000 0000 0000 */
 		/*				_^]\ [ZYX WVUT SRQP  ONML KJIH GFED CBA@ */
 		0x00000000, /*	0000 0000 0000 0000. 0000 0000 0000 0000 */
 		/*				 ~}| {zyx wvut srqp  onml kjih gfed cba` */
@@ -44,8 +44,8 @@ namespace {
 
 	template <typename _Tp>
 	inline void
-	log_(const char* s1, const _Tp s2) {
-		std::cout << s1 << ": " << s2 << std::endl;
+	log_(const char* s1, const _Tp s2, std::string s3 = ":") {
+		std::cout << COLOR_RED << s1 << COLOR_RESET << s3 << " " << s2 << std::endl;
 	}
 
 	inline void
@@ -58,19 +58,19 @@ namespace {
 	result_log_(const check_t& check, double value = 0) {
 		switch (check.error_state) {
 		case bad_date: {
-			log_("Error: bad input : date : => ", check.date);
+			log_("Error: bad input : date ", check.date, "=>");
 			break;
 		}
 		case bad_value: {
-			log_("Error: bad input : value : => ", check.date);
+			log_("Error: bad input : value ", check.date, "=>");
 			break;
 		}
 		case too_large: {
-			log_("Error: too large a number. : ", check.value);
+			log_("Error: too large a number. ", check.value);
 			break;
 		}
 		case negative: {
-			log_("Error: not a positive number : ", check.value);
+			log_("Error: not a positive number. ", check.value);
 			break;
 		}
 		case none: {
@@ -89,11 +89,35 @@ namespace {
 	}
 
 	inline bool
-	is_file_of_(std::string extension, std::string file, void (*log)(const char*, const char*) = NULL) {
+	is_valid_date_(size_t year, size_t month, size_t day) {
+		if (year < 2009 || year > 2023) {
+			return false;
+		} else if (month < 1 || month > 12) {
+			return false;
+		} else if (day < 1 || day > 31) {
+			return false;
+		} else if (month == 2) {
+			if (day > 29) {
+				return false;
+			} else if (day == 29) {
+				if (year % 4 != 0 || (year % 100 == 0 && year % 400 != 0)) {
+					return false;
+				}
+			}
+		} else if (month == 4 || month == 6 || month == 9 || month == 11) {
+			if (day > 30) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	inline bool
+	is_file_of_(std::string extension, std::string file, void (*log)(const char*, const char*, std::string) = NULL) {
 		if (file.size() > extension.size() && file.substr(file.size() - 4, 4) == extension) {
 			return true;
 		} else if (log != NULL) {
-			log("Error: not a valid file name", file.c_str());
+			log("Error: not a valid file name", file.c_str(), ":");
 		}
 		return false;
 	}
@@ -107,39 +131,190 @@ namespace {
 	}
 
 	inline bool
-	check_date_(std::string& date) {
-		(void)syntax_(date_, ' ');
-		return false;
+	check_date_(const std::string& date) {
+		if (date.size() != 10) {
+			return false;
+		}
+		enum {
+			v_year,
+			v_dash_1,
+			v_month,
+			v_dash_2,
+			v_day,
+			v_error,
+			v_end
+		} state
+			= v_year;
+
+		std::string					year, month, day;
+		std::string::const_iterator it = date.begin();
+		while (state != v_end) {
+			switch (state) {
+			case v_year: {
+				while (it != date.end() && syntax_(date_, *it)) {
+					++it;
+				}
+				if (it == date.end()) {
+					state = v_error;
+				} else if (*it == '-') {
+					year  = date.substr(0, 4);
+					state = v_dash_1;
+				} else {
+					state = v_error;
+				}
+				break;
+			}
+			case v_dash_1: {
+				if (*it == '-') {
+					++it;
+					state = v_month;
+				} else {
+					state = v_error;
+				}
+				break;
+			}
+			case v_month: {
+				while (it != date.end() && syntax_(date_, *it)) {
+					++it;
+				}
+				if (it == date.end()) {
+					state = v_error;
+				} else if (*it == '-') {
+					state = v_dash_2;
+					month = date.substr(5, 2);
+				} else {
+					state = v_error;
+				}
+				break;
+			}
+			case v_dash_2: {
+				if (*it == '-') {
+					++it;
+					state = v_day;
+				} else {
+					state = v_error;
+				}
+				break;
+			}
+			case v_day: {
+				while (it != date.end() && syntax_(date_, *it)) {
+					++it;
+				}
+				if (it == date.end()) {
+					state = v_end;
+					day	  = date.substr(8, 2);
+				} else {
+					state = v_error;
+				}
+				break;
+			}
+			case v_end: {
+				break;
+			}
+			case v_error:
+			default: {
+				return false;
+			}
+			}
+		}
+		if (!is_valid_date_(std::atoi(year.c_str()), std::atoi(month.c_str()), std::atoi(day.c_str()))) {
+			return false;
+		}
+		return true;
 	}
 
 	inline bool
-	check_value_(std::string& value) {
-		(void)syntax_(value_, ' ');
-		return false;
+	check_value_(const std::string& value, double& output_value, error_state_e& error) {
+		enum {
+			v_number,
+			v_dot,
+			v_error,
+			v_end
+		} state
+			= v_number;
+
+		bool						dot = false;
+		std::string::const_iterator it	= value.begin();
+
+		while (state != v_end) {
+			switch (state) {
+			case v_number: {
+				if (*it == '-') {
+					error = negative;
+					++it;
+				}
+				while (it != value.end() && syntax_(value_, *it)) {
+					++it;
+				}
+				if (it == value.end()) {
+					state = v_end;
+				} else {
+					state = v_dot;
+				}
+				break;
+			}
+			case v_dot: {
+				if (it == value.end()) {
+					state = v_end;
+				} else if (*it == '.' && !dot) {
+					dot = true;
+					++it;
+					state = v_number;
+				} else {
+					state = v_error;
+					error = bad_value;
+				}
+				break;
+			}
+			case v_end: {
+				break;
+			}
+			case v_error:
+			default: {
+				return false;
+			}
+			}
+		}
+		std::stringstream ss;
+		ss << value;
+		ss >> output_value;
+		if (ss.fail()) {
+			error = bad_value;
+			return false;
+		} else if (output_value < 0) {
+			error = negative;
+			return false;
+		} else if (output_value > 2147483647) {
+			error = too_large;
+			return false;
+		}
+		return true;
 	}
 
 	inline check_t
-	check_basic_line_(std::string buf, size_t left_size, std::string delim) {
+	check_basic_line_(std::string buf, std::string delim) {
 		check_t check;
 		check.error_state = none;
 		check.value		  = 0;
-		check.date		  = "";
+		check.date		  = buf;
 
 		std::string::size_type pos = buf.find(delim);
-		if (pos == std::string::npos || pos != left_size) {
+		if (pos == std::string::npos) {
 			check.error_state = bad_date;
 			return check;
 		}
 		std::string date  = buf.substr(0, pos);
 		std::string value = buf.substr(pos + delim.size(), buf.size() - pos - delim.size());
+		check.date		  = date;
 		if (!check_date_(date)) {
 			check.error_state = bad_date;
-		} else if (!check_value_(value)) {
-			check.error_state = bad_value;
+			return check;
+		}
+		if (!check_value_(value, check.value, check.error_state)) {
+			check.date = value;
 		}
 		return check;
 	}
-
 } // namespace
 
 __NS__::BitcoinExchange(char** argv) {
@@ -153,9 +328,11 @@ __NS__::BitcoinExchange(char** argv) {
 			exit(1);
 		}
 		init_db_(argv[0]);
+		std::cout << "Info: " << argv[0] << " is used as database" << std::endl;
 		argv = &argv[1];
 	} else {
 		init_db_("data.csv");
+		std::cout << "Info: ./data.csv is used as database" << std::endl;
 	}
 	for (size_t i = 0; argv[i] != NULL; ++i) {
 		exchange_(argv[i]);
@@ -197,14 +374,36 @@ __NS__::init_db_(std::string db_file) {
 		} else if (buf[0] == '#' || buf[0] == '\n') {
 			continue;
 		} else {
-			check_t check = check_basic_line_(buf, 10, ",");
-			if (check.error_state == none) {
+			check_t check = check_basic_line_(buf, ",");
+			switch (check.error_state) {
+			case none: {
 				data_.insert(std::make_pair(check.date, check.value));
-			} else {
-				log_line_(db_file, line_number, "form must be [\'0000-00-00\',value] or invalid date or invalid value");
+				break;
 			}
+			case bad_date: {
+				log_line_(db_file, line_number, "invalid date [0000-00-00]");
+				break;
+			}
+			case bad_value: {
+				log_line_(db_file, line_number, "invalid value");
+				break;
+			}
+			case too_large: {
+				log_line_(db_file, line_number, "invalid value [too large]");
+				break;
+			}
+			case negative: {
+				log_line_(db_file, line_number, "invalid value [negative]");
+				break;
+			}
+			case end:
+			default: {
+				log_line_(db_file, line_number, "invalid state");
+				break;
+			}
+			}
+			// TODO : should i check leak?
 		}
-		// TODO : should i check leak?
 	}
 	file.close();
 }
@@ -229,6 +428,8 @@ __NS__::find_and_exchange_(check_t check) {
 
 void
 __NS__::exchange_(const char* input) {
+	std::cout << '\n'
+			  << COLOR_GREEN << input << "'s result" << COLOR_RESET << std::endl;
 	if (input == NULL || input[0] == '\0' || !is_file_of_(".txt", input, log_)) {
 		return;
 	}
@@ -250,10 +451,11 @@ __NS__::exchange_(const char* input) {
 			} else {
 				continue;
 			}
-		} else if (buf[0] == '#' || buf[0] == '\n') {
+		} else if (buf[0] == '#' || buf[0] == '\n' || buf.size() == 0) {
+			std::cout << std::endl;
 			continue;
 		} else {
-			check_t check = check_basic_line_(buf, 10, ",");
+			check_t check = check_basic_line_(buf, " | ");
 			if (check.error_state == none) {
 				find_and_exchange_(check);
 			} else {
@@ -262,6 +464,7 @@ __NS__::exchange_(const char* input) {
 		}
 	}
 	file.close();
+	std::cout << std::endl;
 }
 
 #undef __NS__
