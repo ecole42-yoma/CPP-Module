@@ -29,6 +29,11 @@ typedef enum print_mode {
 	print_off
 } print_mode_e;
 
+typedef enum sort_mode {
+	fake_merge_insert,
+	real_merge_insert
+} sort_mode_e;
+
 template <typename _Tp>
 class PmergeMe {
 public:
@@ -37,55 +42,40 @@ public:
 	typedef _Tp				container;
 
 private:
-	container	 data_;
-	print_mode_e mode_;
+	container	   data_;
+	print_mode_e   mode_;
+	struct timeval start_, end_;
 
+	void
+	get_time_(struct timeval& time) {
+		gettimeofday(&time, NULL);
+	}
 	void print_(const char* msg = "Before ", const char* color = COLOR_RESET);
-	void print_time_(struct timeval start, struct timeval end);
+	void print_time_();
 
-	void sort_();
-	void sort_work_(size_t start, size_t end);
-	void merge_work_(size_t start, size_t middle, size_t end);
-	void insert_work_(size_t start, size_t end);
+	void sort_fake_merge_insert_();
+	void sort_real_merge_insert_();
+	void fake_work_(size_t start, size_t end);
+	void fake_merge_work_(size_t start, size_t middle, size_t end);
+	void fake_insert_work_(size_t start, size_t end);
+
+	void select_sort_(sort_mode_e sort_mode);
 
 public:
-	PmergeMe(container init = container(), print_mode_e mode = print_off);
+	PmergeMe(container init = container(), print_mode_e print_mode = print_off, sort_mode_e sort_mode = fake_merge_insert);
 	~PmergeMe();
 	PmergeMe(const_reference from);
 	reference operator=(const_reference from);
 };
 
 __TP__
-__NS__::PmergeMe(__NS__::container init, print_mode_e mode)
+__NS__::PmergeMe(__NS__::container init, print_mode_e print_mode, sort_mode_e sort_mode)
 	: data_(init)
-	, mode_(mode) {
-	if (mode_ == print_on) {
-		print_("Before ", COLOR_RESET);
-	}
-
-	struct timeval start, end;
-	gettimeofday(&start, NULL);
-
-	sort_();
-
-	gettimeofday(&end, NULL);
-
-	if (mode_ == print_on) {
-#ifdef LOG
-		if (std::is_sorted(data_.begin(), data_.end())) {
-			print_("After", COLOR_GREEN);
-		} else {
-			print_("After", COLOR_RED);
-		}
-#else
-		print_("After");
-#endif
-	}
-	print_time_(start, end);
+	, mode_(print_mode) {
+	select_sort_(sort_mode);
 }
 
-__TP__
-__NS__::~PmergeMe() { }
+__TP__ __NS__::~PmergeMe() { }
 
 __TP__
 __NS__::PmergeMe(__NS__::const_reference from) {
@@ -100,6 +90,48 @@ __NS__::operator=(__NS__::const_reference from) {
 		mode_ = from.mode_;
 	}
 	return *this;
+}
+
+__TP__
+void
+__NS__::select_sort_(sort_mode_e sort_mode) {
+	if (mode_ == print_on) {
+		print_();
+	}
+	get_time_(start_);
+	if (sort_mode == fake_merge_insert) {
+		sort_fake_merge_insert_();
+	} else {
+		sort_real_merge_insert_();
+	}
+	get_time_(end_);
+	if (mode_ == print_on) {
+#ifdef LOG
+		if (std::is_sorted(data_.begin(), data_.end())) {
+			print_("After", COLOR_GREEN);
+		} else {
+			print_("After", COLOR_RED);
+		}
+#else
+		print_("After");
+#endif
+	}
+	print_time_();
+}
+
+__TP__
+void
+__NS__::print_time_() {
+	long seconds	  = end_.tv_sec - start_.tv_sec;
+	long microseconds = end_.tv_usec - start_.tv_usec;
+	if (microseconds < 0) {
+		microseconds += 1e+6;
+		seconds -= 1;
+	}
+	std::cout << "Time to process a range of 5 elements with std::[..] : ";
+	std::cout << std::setw(3) << seconds * 1e+6 << ".";
+	std::cout << std::setfill('0') << std::setw(6) << microseconds;
+	std::cout << " us" << std::setfill(' ') << std::endl;
 }
 
 __TP__
@@ -122,41 +154,26 @@ __NS__::print_(const char* msg, const char* color) {
 
 __TP__
 void
-__NS__::print_time_(struct timeval start, struct timeval end) {
-	long seconds	  = end.tv_sec - start.tv_sec;
-	long microseconds = end.tv_usec - start.tv_usec;
-	if (microseconds < 0) {
-		microseconds += 1e+6;
-		seconds -= 1;
-	}
-	std::cout << "Time to process a range of 5 elements with std::[..] : ";
-	std::cout << std::setw(3) << seconds * 1e+6 << ".";
-	std::cout << std::setfill('0') << std::setw(6) << microseconds;
-	std::cout << " us" << std::setfill(' ') << std::endl;
+__NS__::sort_fake_merge_insert_() {
+	fake_work_(0, data_.size());
 }
 
 __TP__
 void
-__NS__::sort_() {
-	sort_work_(0, data_.size());
-}
-
-__TP__
-void
-__NS__::sort_work_(size_t start, size_t end) {
+__NS__::fake_work_(size_t start, size_t end) {
 	if (end - start > K_SIZE) {
 		size_t middle = (start + end) / 2;
-		sort_work_(start, middle);
-		sort_work_(middle, end);
-		merge_work_(start, middle, end);
+		fake_work_(start, middle);
+		fake_work_(middle, end);
+		fake_merge_work_(start, middle, end);
 	} else {
-		insert_work_(start, end);
+		fake_insert_work_(start, end);
 	}
 }
 
 __TP__
 void
-__NS__::merge_work_(size_t start, size_t middle, size_t end) {
+__NS__::fake_merge_work_(size_t start, size_t middle, size_t end) {
 	size_t n1 = middle - start;
 	size_t n2 = end - middle;
 
@@ -186,7 +203,7 @@ __NS__::merge_work_(size_t start, size_t middle, size_t end) {
 
 __TP__
 void
-__NS__::insert_work_(size_t start, size_t end) {
+__NS__::fake_insert_work_(size_t start, size_t end) {
 	for (size_t i = start; i < end - 1; i++) {
 		size_t j	= i + 1;
 		size_t temp = data_[j];
@@ -196,6 +213,12 @@ __NS__::insert_work_(size_t start, size_t end) {
 		}
 		data_[j] = temp;
 	}
+}
+
+__TP__
+void
+__NS__::sort_real_merge_insert_() {
+	real_work_(0, data_.size());
 }
 
 #undef __NS__

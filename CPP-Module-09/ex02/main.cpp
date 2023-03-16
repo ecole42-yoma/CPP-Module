@@ -44,8 +44,7 @@ main(int argc, char** argv) {
 			size_t temp = std::atoi(argv[i]);
 			if (temp <= 0) {
 				log_("Error", "Number must be positive");
-			}
-			if (set_for_dup.find(temp) != set_for_dup.end()) {
+			} else if (set_for_dup.find(temp) != set_for_dup.end()) {
 				log_("Error", "Duplicate number");
 			}
 			set_for_dup.insert(temp);
@@ -56,8 +55,11 @@ main(int argc, char** argv) {
 		}
 	}
 
-	PmergeMe<posi_vector> vector_merge(vector, print_on);
-	PmergeMe<posi_deque>  deque_merge(deque, print_off);
+	PmergeMe<posi_vector> vector_merge_fake(vector, print_on);
+	PmergeMe<posi_deque>  deque_merge_fake(deque, print_off);
+
+	PmergeMe<posi_vector> vector_merge_real(vector, print_on, real_merge_insert);
+	PmergeMe<posi_deque>  deque_merge_real(deque, print_off, real_merge_insert);
 
 	return 0;
 }
