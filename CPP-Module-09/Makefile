@@ -22,6 +22,10 @@ ifndef LOG
 	LOG		=
 endif
 
+ifndef OPTION
+	OPTION	=
+endif
+
 SRC_DIR		=
 OBJ_DIR		=	obj/
 OBJ			=	$(addprefix $(OBJ_DIR), $(SRC:.cpp=.o))
@@ -38,7 +42,8 @@ CXXFLAGS	+=	$(addprefix -W, $(CXX_WARN_FLAGS))
 CXXFLAGS	+=	$(addprefix -std=, $(CXX_STD_FLAGS))
 CXXFLAGS	+=	-pedantic
 CXXFLAGS	+=	-g -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer
-CXXFLAGS	+=	$(LOG)
+# CXXFLAGS	+=	$(LOG)
+CXXFLAGS	+=	$(OPTION)
 
 RM			=	rm -f
 
@@ -51,13 +56,14 @@ LEAK		=	-fsanitize=leak
 #==============================================================================
 #	Make Part
 #==============================================================================
-.PHONY		:	all clean fclean re
+.PHONY		:	all clean fclean re log
 all			:	$(NAME)
 clean		:	; $(RM) -r $(OBJ_DIR)
 fclean		:	clean ; $(RM) $(NAME)
 re			:
 		make fclean
 		make all
+log			: ; make re CXXFLAGS="$(CXXFLAGS) $(LOG)"
 
 $(NAME)		:	$(OBJ)
 		$(CXX) $(CXXFLAGS) $^ -o $@
