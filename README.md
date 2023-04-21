@@ -1,5 +1,3 @@
-<br>
-
 ## 📑 CPP-Module
 |  Project Name  |  Stack  |  Summary  |
 |:---:|:---:|:---|
